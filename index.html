@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp QR Code</title>
+</head>
+<body>
+    <h1>Scan this QR code to pair with WhatsApp</h1>
+    <div id="qr-container">
+        <img id="qr-code" alt="QR Code">
+        <p id="qr-error-message" style="display: none; color: red;">Please refresh the page if the QR code isn't showing.</p>
+    </div>
+    <p id="timer-message"></p>
+    <script>
+        async function updateQRCode() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const deviceId = urlParams.get('deviceid');
+                console.log('Device ID:', deviceId);
+
+                if (!deviceId) {
+                    console.error('Device ID not found in URL parameter.');
+                    return;
+                }
+
+                const timerMessage = document.getElementById('timer-message');
+                let countdown = 5;
+                timerMessage.textContent = `Code will be displayed in ${countdown} seconds.`;
+
+                const interval = setInterval(() => {
+                    countdown--;
+                    if (countdown > 0) {
+                        timerMessage.textContent = `Code will be displayed in ${countdown} seconds.`;
+                    } else {
+                        timerMessage.textContent = '';
+                        clearInterval(interval);
+                    }
+                }, 1000);
+
+                await new Promise(resolve => setTimeout(resolve, 5000));
+
+                const response = await fetch(`/api/generate-qr?deviceid=${deviceId}`);
+                console.log('Fetch response:', response);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const responseData = await response.json();
+                console.log('Response Data:', responseData);
+
+                if (responseData.svg) {
+                    document.getElementById('qr-code').src = responseData.svg;
+                    document.getElementById('qr-error-message').style.display = 'none';
+                } else {
+                    console.error('Invalid SVG data format:', responseData);
+                    document.getElementById('qr-code').src = '';
+                    document.getElementById('qr-error-message').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error fetching or rendering QR code:', error);
+                document.getElementById('qr-code').src = '';
+                document.getElementById('qr-error-message').style.display = 'block';
+            }
+        }
+
+        setInterval(updateQRCode, 30000);
+        updateQRCode();
+    </script>
+</body>
+</html>
