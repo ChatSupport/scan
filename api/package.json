@@ -1,0 +1,14 @@
+{
+  "name": "generate-qr",
+  "version": "1.0.0",
+  "description": "Generate QR code for WhatsApp pairing",
+  "main": "index.js",
+  "dependencies": {
+    "node-fetch": "^2.6.1"
+  },
+  "scripts": {
+    "start": "node api/generate-qr.js"
+  },
+  "author": "ChatSupport",
+  "license": "ISC"
+}
